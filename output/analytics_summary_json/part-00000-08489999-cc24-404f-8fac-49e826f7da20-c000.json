@@ -1,0 +1,20 @@
+{"assigned_team":"Service Administration des Ventes","request_type":"Facturation & Contrat","priority":"Basse","total_tickets":29,"unique_clients":24,"avg_sla_hours":48.0}
+{"assigned_team":"Service Administration des Ventes","request_type":"Facturation & Contrat","priority":"Haute","total_tickets":40,"unique_clients":25,"avg_sla_hours":4.0}
+{"assigned_team":"Support Niveau 1 - Accueil","request_type":"Demande d'information","priority":"Haute","total_tickets":32,"unique_clients":28,"avg_sla_hours":4.0}
+{"assigned_team":"Équipe IoT & Terrain","request_type":"Maintenance capteur IoT","priority":"Basse","total_tickets":42,"unique_clients":31,"avg_sla_hours":48.0}
+{"assigned_team":"Support Niveau 1 - Accueil","request_type":"Demande d'information","priority":"Basse","total_tickets":45,"unique_clients":31,"avg_sla_hours":48.0}
+{"assigned_team":"Service Administration des Ventes","request_type":"Facturation & Contrat","priority":"Critique","total_tickets":14,"unique_clients":9,"avg_sla_hours":2.0}
+{"assigned_team":"Support Niveau 1 - Accueil","request_type":"Demande d'information","priority":"Critique","total_tickets":18,"unique_clients":17,"avg_sla_hours":2.0}
+{"assigned_team":"Équipe IAM & Sécurité AD","request_type":"Accès & Identifiants","priority":"Moyenne","total_tickets":57,"unique_clients":32,"avg_sla_hours":24.0}
+{"assigned_team":"Équipe IoT & Terrain","request_type":"Maintenance capteur IoT","priority":"Moyenne","total_tickets":59,"unique_clients":41,"avg_sla_hours":24.0}
+{"assigned_team":"Équipe IAM & Sécurité AD","request_type":"Accès & Identifiants","priority":"Basse","total_tickets":39,"unique_clients":31,"avg_sla_hours":48.0}
+{"assigned_team":"Équipe IAM & Sécurité AD","request_type":"Accès & Identifiants","priority":"Haute","total_tickets":31,"unique_clients":20,"avg_sla_hours":4.0}
+{"assigned_team":"Équipe IoT & Terrain","request_type":"Maintenance capteur IoT","priority":"Critique","total_tickets":14,"unique_clients":13,"avg_sla_hours":2.0}
+{"assigned_team":"Support Niveau 2 - Infrastructure","request_type":"Incident technique","priority":"Moyenne","total_tickets":55,"unique_clients":34,"avg_sla_hours":24.0}
+{"assigned_team":"Service Administration des Ventes","request_type":"Facturation & Contrat","priority":"Moyenne","total_tickets":61,"unique_clients":39,"avg_sla_hours":24.0}
+{"assigned_team":"Équipe IAM & Sécurité AD","request_type":"Accès & Identifiants","priority":"Critique","total_tickets":16,"unique_clients":14,"avg_sla_hours":2.0}
+{"assigned_team":"Support Niveau 2 - Infrastructure","request_type":"Incident technique","priority":"Basse","total_tickets":32,"unique_clients":30,"avg_sla_hours":48.0}
+{"assigned_team":"Support Niveau 1 - Accueil","request_type":"Demande d'information","priority":"Moyenne","total_tickets":59,"unique_clients":36,"avg_sla_hours":24.0}
+{"assigned_team":"Support Niveau 2 - Infrastructure","request_type":"Incident technique","priority":"Critique","total_tickets":17,"unique_clients":17,"avg_sla_hours":2.0}
+{"assigned_team":"Support Niveau 2 - Infrastructure","request_type":"Incident technique","priority":"Haute","total_tickets":43,"unique_clients":34,"avg_sla_hours":4.0}
+{"assigned_team":"Équipe IoT & Terrain","request_type":"Maintenance capteur IoT","priority":"Haute","total_tickets":43,"unique_clients":31,"avg_sla_hours":4.0}

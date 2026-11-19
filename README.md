@@ -1,48 +1,27 @@
-
 # POC — Pipeline Temps Réel de Gestion des Tickets Clients (InduTech)
 
-Ce dépôt contient le Proof of Concept (POC) d'un pipeline Data Engineering temps réel conçu pour **InduTech**. Il permet d'ingérer, d'enrichir et d'analyser en continu les tickets clients à l'aide de **Redpanda**, **Python**, **PySpark Structured Streaming** et **Docker Compose**.
+Ce dépôt contient le Proof of Concept (POC) d'un pipeline Data Engineering temps réel conçu pour **InduTech**. Il permet d'ingérer, d'enrichir et d'analyser en continu les tickets clients à l'aide de **Redpanda**, **Python**, **PySpark** et **Docker Compose**.
 
 ---
 
 ## Architecture du Pipeline ETL (Diagramme Mermaid)
 
 ```mermaid
-flowchart LR
-    subgraph Ingestion ["1. Génération & Ingestion Temps Réel"]
-        P["🐍 Producteur Python<br/>(producer/producer.py)"]
-        RP[("⚡ Cluster Redpanda<br/>Topic : client_tickets<br/>(3 partitions)")]
-        UI["🖥️ Redpanda Console<br/>http://localhost:8080"]
-        P -->|"JSON UTF-8<br/>(API Kafka :29092)"| RP
-        RP <-->|"Monitoring &<br/>Inspection"| UI
-    end
-
-    subgraph Processing ["2. Traitement & Analyse Streaming"]
-        SP["🔥 PySpark Structured Streaming<br/>(spark/consumer_spark.py)"]
-        T1["⚙️ Enrichissement Métier<br/>• Assignation équipe support<br/>• Calcul délai SLA cible"]
-        T2["📊 Agrégations Temps Réel<br/>• Total tickets / équipe<br/>• Clients distincts & SLA moyen"]
-        RP -->|"readStream<br/>(micro-batch 5s)"| SP
-        SP --> T1
-        T1 --> T2
-    end
-
-    subgraph Storage ["3. Stockage & Restitution Analytique"]
-        PQ[("📦 Export Parquet<br/>output/enriched_tickets_parquet/")]
-        JS[("📄 Export JSON<br/>output/analytics_summary_json/")]
-        CP[("🛡️ Checkpoints Spark<br/>output/_checkpoints/")]
-        T1 -->|"Mode Append"| PQ
-        T2 -->|"Mode Complete"| JS
-        SP -.->|"Reprise sur panne"| CP
-    end
+flowchart TD
+    A["Producteur Python<br/>Génération aléatoire de tickets"] -->|"Envoi JSON en continu"| B["Redpanda<br/>Topic : client_tickets (3 partitions)"]
+    B -->|"Visualisation web"| C["Redpanda Console<br/>Interface Web (localhost:8080)"]
+    B -->|"Lecture temps réel"| D["Traitement PySpark<br/>Attribution équipe & calculs"]
+    D -->|"Tickets enrichis + SLA"| E["Export Parquet<br/>output/enriched_tickets_parquet"]
+    D -->|"Statistiques agrégées"| F["Export JSON<br/>output/analytics_summary_json"]
 ```
 
 ---
 
 ## Démonstration Vidéo
 
-* **Vidéo de présentation et démonstration du pipeline ETL :** [Voir la vidéo de démonstration (Loom / YouTube)](https://www.loom.com/share/REMPLACER_PAR_VOTRE_LIEN_VIDEO)
+* **Présentation et démonstration du pipeline ETL :** [Lien vidéo](REMPLACER_PAR_VOTRE_LIEN_VIDEO)
 
-*(La vidéo présente l'architecture conteneurisée, le démarrage complet via `docker compose up --build -d`, l'inspection en direct des messages dans Redpanda Console et la génération automatique des rapports Parquet et JSON par PySpark.)*
+*(Cette courte vidéo présente l'architecture du projet, le démarrage complet via `docker compose up -d`, l'arrivée en direct des tickets dans l'interface web de Redpanda et la génération automatique des fichiers Parquet et JSON par PySpark.)*
 
 ---
 
@@ -53,14 +32,14 @@ indutech-tickets-poc/
 ├── docker-compose.yml              # Orchestration complète (Redpanda, Console, Producer, Spark)
 ├── README.md                       # Documentation du projet et diagramme Mermaid
 ├── redpanda/
-│   └── Dockerfile                  # Image Docker du broker Redpanda
+│   └── Dockerfile                  # Image Docker de Redpanda
 ├── producer/
 │   ├── Dockerfile                  # Image Docker du générateur de tickets
 │   ├── producer.py                 # Script Python générant les tickets clients aléatoires
 │   └── requirements.txt            # Dépendance : kafka-python-ng
 ├── spark/
 │   ├── Dockerfile                  # Image Docker Apache Spark 3.5.3 + connecteur Kafka
-│   ├── consumer_spark.py           # Pipeline PySpark Structured Streaming
+│   ├── consumer_spark.py           # Pipeline PySpark de traitement en temps réel
 │   └── requirements.txt            # Dépendance : pyspark==3.5.3
 └── output/                         # Répertoire monté en volume contenant les exports Parquet & JSON
 ```
@@ -84,23 +63,23 @@ docker compose up --build -d
 Cette commande :
 
 1. Construit les 3 images Docker (`redpanda`, `ticket-producer`, `spark-processor`).
-2. Démarre le broker **Redpanda** et attend qu'il soit opérationnel (`healthcheck`).
+2. Démarre **Redpanda** et attend qu'il soit opérationnel (`healthcheck`).
 3. Crée automatiquement le topic **`client_tickets`** (3 partitions) via le conteneur `redpanda-init`.
 4. Lance **Redpanda Console** sur [http://localhost:8080](http://localhost:8080).
 5. Démarre l'envoi continu de tickets par `indutech-producer` et leur analyse temps réel par `indutech-spark`.
 
 ### 2. Vérifier le fonctionnement en direct
 
-* **Suivre les tickets envoyés par le producteur :**
+* **Contrôler l'état des conteneurs :**
   ```bash
-  docker logs -f indutech-producer
+  docker compose ps
   ```
-* **Suivre les micro-batchs traités par PySpark :**
+* **Suivre les journaux du producteur et de PySpark :**
   ```bash
-  docker logs -f indutech-spark
+  docker compose logs --tail 6 ticket-producer spark-processor
   ```
 * **Inspecter les topics et messages dans l'interface web :**
-  Ouvrez [http://localhost:8080](http://localhost:8080) > **Topics** > **`client_tickets`**.
+  Ouvrez [http://localhost:8080](http://localhost:8080) > **Topics** > **`client_tickets`** > **Messages**.
 * **Consulter les résultats exportés :**
   * Données détaillées enrichies : `output/enriched_tickets_parquet/*.snappy.parquet`
   * Synthèse analytique agrégée : `output/analytics_summary_json/*.json`
@@ -110,8 +89,6 @@ Cette commande :
 ```bash
 docker compose down
 ```
-
-*(Ajoutez `-v` uniquement si vous souhaitez supprimer également le volume de données Redpanda.)*
 
 ---
 
@@ -139,4 +116,4 @@ Chaque ticket généré en JSON contient les 6 attributs suivants :
 | `Demande d'information`          | Support Niveau 1 - Accueil                            |
 
 * **SLA cible (`sla_target_hours`) :** `2h` (Critique), `4h` (Haute), `24h` (Moyenne), `48h` (Basse).
-* **Performance & Résilience Spark :** partitions de shuffle ajustées (`spark.sql.shuffle.partitions=4`), arrêt gracieux (`stopGracefullyOnShutdown=true`), filtrage des messages JSON invalides et gestion des *checkpoints* (`output/_checkpoints/`) permettant une reprise sans perte ni doublon en cas de redémarrage.
+* **Performance & Résilience Spark :** partitions de shuffle ajustées (`spark.sql.shuffle.partitions=4`), arrêt gracieux (`stopGracefullyOnShutdown=true`), filtrage des messages JSON invalides et gestion des *checkpoints* (`output/_checkpoints/`).

@@ -1,0 +1,3 @@
+v1
+{"path":"file:///app/output/enriched_tickets_parquet/part-00000-2b1bb6f0-1a73-430d-bbe3-d9db3bfc6fea-c000.snappy.parquet","size":3929,"isDir":false,"modificationTime":1795105893572,"blockReplication":1,"blockSize":33554432,"action":"add"}
+{"path":"file:///app/output/enriched_tickets_parquet/part-00001-424ec093-f782-4eed-a307-06b6d4fb6379-c000.snappy.parquet","size":3942,"isDir":false,"modificationTime":1795105894077,"blockReplication":1,"blockSize":33554432,"action":"add"}
