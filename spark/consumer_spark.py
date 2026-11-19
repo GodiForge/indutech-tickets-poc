@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from pyspark.sql import SparkSession
@@ -16,7 +17,7 @@ KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "redpanda:29092")
 TOPIC_NAME = os.getenv("KAFKA_TOPIC", "client_tickets")
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/app/output")
 PARQUET_PATH = os.path.join(OUTPUT_DIR, "enriched_tickets_parquet")
-JSON_PATH = os.path.join(OUTPUT_DIR, "analytics_summary_json")
+SUMMARY_JSON_FILE = os.path.join(OUTPUT_DIR, "analytics_summary.json")
 CHECKPOINT_PARQUET = os.path.join(OUTPUT_DIR, "_checkpoints", "parquet")
 CHECKPOINT_JSON = os.path.join(OUTPUT_DIR, "_checkpoints", "json")
 RUN_DURATION = int(os.getenv("SPARK_RUN_DURATION", "25"))
@@ -37,14 +38,12 @@ def create_spark_session() -> SparkSession:
 
 def write_analytics_json(batch_df, batch_id: int):
     if not batch_df.isEmpty():
-        (
-            batch_df
-            .coalesce(1)
-            .write
-            .mode("overwrite")
-            .json(JSON_PATH)
-        )
-        print(f"[Batch {batch_id}] Synthèse analytique exportée vers {JSON_PATH}")
+        rows = [row.asDict(recursive=True) for row in batch_df.collect()]
+        tmp_file = SUMMARY_JSON_FILE + ".tmp"
+        with open(tmp_file, "w", encoding="utf-8") as f:
+            json.dump(rows, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_file, SUMMARY_JSON_FILE)
+        print(f"[Batch {batch_id}] Synthèse analytique exportée vers {SUMMARY_JSON_FILE}")
 
 
 def main():
@@ -54,7 +53,7 @@ def main():
         print("=================================================================")
         print(f"Connexion PySpark -> Redpanda ({KAFKA_BOOTSTRAP}) | Topic : {TOPIC_NAME}")
         print(f"Export Parquet   -> {PARQUET_PATH}")
-        print(f"Export JSON      -> {JSON_PATH}")
+        print(f"Export JSON      -> {SUMMARY_JSON_FILE}")
         print("=================================================================\n")
 
         ticket_schema = StructType([
