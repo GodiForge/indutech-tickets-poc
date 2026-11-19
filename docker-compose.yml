@@ -1,0 +1,90 @@
+services:
+  redpanda:
+    build:
+      context: ./redpanda
+      dockerfile: Dockerfile
+    container_name: indutech-redpanda
+    hostname: redpanda
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "9644:9644"
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    networks:
+      - indutech-net
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:\\s*true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redpanda-init:
+    image: docker.redpanda.com/redpandadata/redpanda:latest
+    container_name: indutech-redpanda-init
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    networks:
+      - indutech-net
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Création du topic client_tickets..."
+        rpk topic create client_tickets --partitions 3 --replicas 1 -X brokers=redpanda:29092 || true
+        rpk topic list -X brokers=redpanda:29092
+
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:latest
+    container_name: indutech-console
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_BROKERS: redpanda:29092
+      REDPANDA_ADMINAPI_ENABLED: "true"
+      REDPANDA_ADMINAPI_URLS: http://redpanda:9644
+    networks:
+      - indutech-net
+
+  ticket-producer:
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+    container_name: indutech-producer
+    depends_on:
+      redpanda-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:29092
+    networks:
+      - indutech-net
+    restart: unless-stopped
+
+  spark-processor:
+    build:
+      context: ./spark
+      dockerfile: Dockerfile
+    container_name: indutech-spark
+    depends_on:
+      redpanda-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:29092
+      KAFKA_TOPIC: client_tickets
+      OUTPUT_DIR: /app/output
+      SPARK_RUN_DURATION: "0"
+    volumes:
+      - ./output:/app/output
+    networks:
+      - indutech-net
+    restart: unless-stopped
+
+networks:
+  indutech-net:
+    driver: bridge
+
+volumes:
+  redpanda-data:
